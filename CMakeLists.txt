@@ -1,4 +1,4 @@
-idf_component_register(SRCS "template.c" 
+idf_component_register(SRCS "drv_rmt.c" 
                     INCLUDE_DIRS "." 
                                       )
                  

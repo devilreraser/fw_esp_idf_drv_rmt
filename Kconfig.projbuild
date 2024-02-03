@@ -1,7 +1,11 @@
-menu "Component template Configuration"
+menu "Component drv_rmt Configuration"
 
-    config TEMPLATE_USE
-        bool "Use template component"
+    config DRV_RMT_USE
+        bool "Use drv_rmt component"
         default y
+    
+    config DRV_RMT_TEST_RX_GPIO
+        int "GPIO_NUM for Rx Test"
+        default -1
         
 endmenu
