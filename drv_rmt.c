@@ -46,7 +46,7 @@
 /* *****************************************************************************
  * Variables Definitions
  **************************************************************************** */
-static rmt_channel_t test_tx_channel = RMT_CHANNEL_0;
+//static rmt_channel_t test_tx_channel = RMT_CHANNEL_0;
 static rmt_channel_t test_rx_channel = RMT_CHANNEL_2;
 
 RingbufHandle_t test_rb = NULL;
@@ -82,7 +82,7 @@ void drv_rmt_test_start_rx(void)
 void drv_rmt_test_reset_rx(void)
 {
     rmt_rx_memory_reset(test_rx_channel);
-    rmt_memory_rw_rst(test_rx_channel);
+    //rmt_memory_rw_rst(test_rx_channel);
 
 }
 
