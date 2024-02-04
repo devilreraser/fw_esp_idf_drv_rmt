@@ -46,8 +46,8 @@
 /* *****************************************************************************
  * Variables Definitions
  **************************************************************************** */
-//static rmt_channel_t test_tx_channel = RMT_CHANNEL_0;
-static rmt_channel_t test_rx_channel = RMT_CHANNEL_2;
+//static rmt_channel_t test_tx_channel = RMT_CHANNEL_6;
+static rmt_channel_t test_rx_channel = RMT_CHANNEL_7;
 
 RingbufHandle_t test_rb = NULL;
 
