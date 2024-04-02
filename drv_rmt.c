@@ -20,7 +20,16 @@
 #include "freertos/task.h"
 #include "esp_log.h"
 
+#define FORCE_LEGACY_FOR_RMT_ESP_IDF_VERSION_5    1
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0) && FORCE_LEGACY_FOR_RMT_ESP_IDF_VERSION_5 == 0
+#include "driver/rmt_tx.h"
+#include "driver/rmt_rx.h"
+#else
+//#pragma GCC diagnostic ignored "-Wcpp"
 #include "driver/rmt.h"
+//#pragma GCC diagnostic pop
+#endif
+
 
 /* *****************************************************************************
  * Configuration Definitions
