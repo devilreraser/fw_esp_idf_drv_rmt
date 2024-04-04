@@ -114,7 +114,7 @@ size_t drv_rmt_test_read_rx(uint8_t* pu8_data, size_t max_size, TickType_t timeo
 
     items = (rmt_item32_t *) xRingbufferReceive(test_rb, &length, timeout);
 
-    if (timeout) vTaskDelay(10);
+    if (timeout) vTaskDelay(100);
     if (items) 
     {
         if (timeout)
