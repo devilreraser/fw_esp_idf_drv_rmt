@@ -115,7 +115,11 @@ size_t drv_rmt_test_read_rx(uint8_t* pu8_data, size_t max_size, TickType_t timeo
     items = (rmt_item32_t *) xRingbufferReceive(test_rb, &length, timeout);
 
     //if (timeout) vTaskDelay(timeout);
-    if (timeout) ets_delay_us(pdTICKS_TO_MS(timeout)*1000);
+    #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5,0,0)
+    if (timeout) esp_rom_delay_us(pdTICKS_TO_MS(timeout)*1000); //v.5.0.4
+    #else
+    if (timeout) ets_delay_us(pdTICKS_TO_MS(timeout)*1000);   //v.4.4.3
+    #endif
     if (items) 
     {
         if (timeout)
