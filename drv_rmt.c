@@ -55,10 +55,10 @@
 /* *****************************************************************************
  * Variables Definitions
  **************************************************************************** */
-//static rmt_channel_t test_tx_channel = RMT_CHANNEL_6;
-static rmt_channel_t test_rx_channel = RMT_CHANNEL_7;
+//static rmt_channel_t tx_channel = RMT_CHANNEL_6;
+static rmt_channel_t rx_channel = RMT_CHANNEL_7;
 
-RingbufHandle_t test_rb = NULL;
+static RingbufHandle_t ring_buffer = NULL;
 
 /* *****************************************************************************
  * Prototype of functions definitions
@@ -72,67 +72,73 @@ void drv_rmt_init(void)
     esp_log_level_set(TAG, ESP_LOG_INFO);
 }
 
-void drv_rmt_test_init_rx(void)
+void drv_rmt_init_rx(void)
 {
-    rmt_config_t rmt_rx_config = RMT_DEFAULT_CONFIG_RX(CONFIG_DRV_RMT_TEST_RX_GPIO, test_rx_channel);
+    rmt_config_t rmt_rx_config = RMT_DEFAULT_CONFIG_RX(CONFIG_DRV_RMT_TEST_RX_GPIO, rx_channel);
+    //rmt_rx_config.flags = RMT_CHANNEL_FLAGS_INVERT_SIG;
+    rmt_rx_config.rx_config.idle_threshold = 80 * 120;
     rmt_config(&rmt_rx_config);
-    rmt_driver_install(test_rx_channel, 1000, 0);
+    rmt_driver_install(rx_channel, 512, ESP_INTR_FLAG_LOWMED | ESP_INTR_FLAG_IRAM | ESP_INTR_FLAG_SHARED);
 
     //get RMT RX ringbuffer
-    rmt_get_ringbuf_handle(test_rx_channel, &test_rb);
+    rmt_get_ringbuf_handle(rx_channel, &ring_buffer);
 
 }
 
-void drv_rmt_test_start_rx(void)
+void drv_rmt_start_rx(void)
 {
-    rmt_rx_start(test_rx_channel, true);
+    bool b_reset_rx_pointer = true;
+    rmt_rx_start(rx_channel, b_reset_rx_pointer);
 }
 
-void drv_rmt_test_reset_rx(void)
+void drv_rmt_reset_rx(void)
 {
-    rmt_rx_memory_reset(test_rx_channel);
-    //rmt_memory_rw_rst(test_rx_channel);
+    rmt_rx_memory_reset(rx_channel);
+    //rmt_memory_rw_rst(rx_channel);
 
 }
 
-void drv_rmt_test_stop_rx(void)
+void drv_rmt_stop_rx(void)
 {
-    rmt_rx_stop(test_rx_channel);
+    rmt_rx_stop(rx_channel);
 }
 
-void drv_rmt_test_deinit_rx(void)
+void drv_rmt_deinit_rx(void)
 {
-    rmt_driver_uninstall(test_rx_channel);
+    rmt_driver_uninstall(rx_channel);
 }
 
 
-size_t drv_rmt_test_read_rx(uint8_t* pu8_data, size_t max_size, TickType_t timeout)
+size_t drv_rmt_read_rx(uint8_t* pu8_data, size_t max_size, TickType_t timeout)
 {
     size_t data_length = 0;
     size_t length = 0;
     rmt_item32_t *items = NULL;
 
-    items = (rmt_item32_t *) xRingbufferReceive(test_rb, &length, timeout);
+    // //if (timeout) vTaskDelay(timeout);
+    // #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5,0,0)
+    // if (timeout) esp_rom_delay_us(pdTICKS_TO_MS(timeout)*1000); //v.5.0.4
+    // #else
+    // if (timeout) ets_delay_us(pdTICKS_TO_MS(timeout)*1000);   //v.4.4.3
+    // #endif
 
-    //if (timeout) vTaskDelay(timeout);
-    #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5,0,0)
-    if (timeout) esp_rom_delay_us(pdTICKS_TO_MS(timeout)*1000); //v.5.0.4
-    #else
-    if (timeout) ets_delay_us(pdTICKS_TO_MS(timeout)*1000);   //v.4.4.3
-    #endif
+    items = (rmt_item32_t *) xRingbufferReceive(ring_buffer, &length, timeout);
+
     if (items) 
     {
+        ESP_LOGD(TAG, "xRingbufferReceive %d bytes", length);
         if (timeout)
         {
             length /= 4; // one RMT = 4 Bytes
+            ESP_LOGD(TAG, "xRingbufferReceive %d rmt items", length);
             for (int index = 0; index < length; index++)
             {
-                ESP_LOGD(TAG, "[%d] | [0](%d)=%3d [1](%d)=%3d", index, items[index].level0, items[index].duration0, items[index].level1, items[index].duration1);
+                ESP_LOGD(TAG, "[%2d] | (%d)=%3d (%d)=%3d", index, items[index].level0, items[index].duration0, items[index].level1, items[index].duration1);
             }
 
             if(pu8_data != NULL)
             {
-                if ((length - 2) == 40)
+                if ((length - 3) == 40)
                 {
 
                     for (int index = 0; index < length; index++)
@@ -149,7 +155,6 @@ size_t drv_rmt_test_read_rx(uint8_t* pu8_data, size_t max_size, TickType_t timeo
 
                 }
             }
-
         }
 
         
@@ -160,7 +165,7 @@ size_t drv_rmt_test_read_rx(uint8_t* pu8_data, size_t max_size, TickType_t timeo
         // }
 
         //after parsing the data, return spaces to ringbuffer.
-        vRingbufferReturnItem(test_rb, (void *) items);
+        vRingbufferReturnItem(ring_buffer, (void *) items);
     }
 
     return data_length;

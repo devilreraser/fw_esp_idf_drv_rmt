@@ -52,12 +52,12 @@ extern "C"
  * Function Prototypes
  **************************************************************************** */
 void drv_rmt_init(void);
-void drv_rmt_test_init_rx(void);
-void drv_rmt_test_start_rx(void);
-void drv_rmt_test_reset_rx(void);
-void drv_rmt_test_stop_rx(void);
-void drv_rmt_test_deinit_rx(void);
-size_t drv_rmt_test_read_rx(uint8_t* pu8_data, size_t max_size, TickType_t timeout);
+void drv_rmt_init_rx(void);
+void drv_rmt_start_rx(void);
+void drv_rmt_reset_rx(void);
+void drv_rmt_stop_rx(void);
+void drv_rmt_deinit_rx(void);
+size_t drv_rmt_read_rx(uint8_t* pu8_data, size_t max_size, TickType_t timeout);
 
 
 
